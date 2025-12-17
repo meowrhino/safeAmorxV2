@@ -4,6 +4,7 @@
 
 const CONFIG = {
     CELLS_IN_MAX_DIMENSION: 10,
+    CELLS_IN_MAX_DIMENSION_MOBILE: 5,
     RESIZE_DEBOUNCE_MS: 150,
     MAX_ATTEMPTS: 50,
     AVOID_OTHER_DESTINATIONS: true,
@@ -24,19 +25,26 @@ const sections = [
 // GRID ADAPTABLE
 // ============================================================================
 
+function getCellsInMaxDimension() {
+    return window.matchMedia('(max-width: 768px)').matches
+        ? CONFIG.CELLS_IN_MAX_DIMENSION_MOBILE
+        : CONFIG.CELLS_IN_MAX_DIMENSION;
+}
+
 function calculateGridSize(containerWidth, containerHeight) {
+    const cellsInMaxDimension = getCellsInMaxDimension();
     const maxDim = Math.max(containerWidth, containerHeight);
     const minDim = Math.min(containerWidth, containerHeight);
     // Forzamos tamaño de celda entero (px) para evitar subpíxeles y "seams"
-    const cellSize = Math.max(1, Math.floor(maxDim / CONFIG.CELLS_IN_MAX_DIMENSION));
+    const cellSize = Math.max(1, Math.floor(maxDim / cellsInMaxDimension));
     const cellsInMinDim = Math.max(
         1,
-        Math.min(CONFIG.CELLS_IN_MAX_DIMENSION, Math.floor(minDim / cellSize))
+        Math.min(cellsInMaxDimension, Math.floor(minDim / cellSize))
     );
     
     return {
-        cols: containerWidth > containerHeight ? CONFIG.CELLS_IN_MAX_DIMENSION : cellsInMinDim,
-        rows: containerWidth > containerHeight ? cellsInMinDim : CONFIG.CELLS_IN_MAX_DIMENSION,
+        cols: containerWidth > containerHeight ? cellsInMaxDimension : cellsInMinDim,
+        rows: containerWidth > containerHeight ? cellsInMinDim : cellsInMaxDimension,
         cellSize: cellSize
     };
 }

@@ -12,12 +12,18 @@ body {
     font-family: 'BBH Bogle', sans-serif;
     width: 100%;
     height: 100vh;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
     background-image: url('../assets/images/background.webp');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
     background-attachment: fixed;
+}
+
+/* home: sin scroll */
+body.home-page {
+    overflow: hidden;
 }
 
 /* ============================================================================
@@ -111,7 +117,7 @@ body {
 
 .grid-cell.home .section-label {
     color: #ffffff;
-    font-size: clamp(0.7rem, 1.5vw, 1.1rem);
+    font-size: 1rem;
     font-weight: 700;
     text-transform: lowercase;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
@@ -301,14 +307,18 @@ body {
    ============================================================================ */
 
 @media (max-width: 768px) {
+    .grid-section {
+        padding: 6px;
+    }
+
     .grid-container {
-        max-width: 95vw;
-        max-height: 95vw;
+        max-width: calc(100vw - 12px);
+        max-height: calc(100vw - 12px);
     }
 
     .grid-cell.home .section-label,
     .grid-cell.destination a {
-        font-size: clamp(0.5rem, 2vw, 0.9rem);
+        font-size: 1rem;
     }
     
     .grid-cell.pipe {
