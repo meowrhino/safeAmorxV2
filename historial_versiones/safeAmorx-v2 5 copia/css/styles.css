@@ -1,0 +1,427 @@
+/* ============================================================================
+   ESTILOS BASE
+   ============================================================================ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'BBH Bogle', sans-serif;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    background-image: url('../assets/images/background.webp');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+/* ============================================================================
+   LAYOUT PRINCIPAL (70% - 30%)
+   ============================================================================ */
+
+.container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+}
+
+/* desktop: horizontal layout (70% - 30%) */
+@media (min-width: 769px) {
+    .container {
+        flex-direction: row;
+    }
+
+    .grid-section {
+        width: 70%;
+        height: 100%;
+    }
+
+    .logo-section {
+        width: 30%;
+        height: 100%;
+    }
+}
+
+/* mobile: vertical layout (70% top - 30% bottom) */
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+    }
+
+    .grid-section {
+        width: 100%;
+        height: 70%;
+    }
+
+    .logo-section {
+        width: 100%;
+        height: 30%;
+    }
+}
+
+/* ============================================================================
+   GRID SECTION
+   ============================================================================ */
+
+.grid-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.grid-container {
+    display: grid;
+    gap: 0;
+    width: 100%;
+    height: 100%;
+    max-width: 90vh;
+    max-height: 90vh;
+    aspect-ratio: 1 / 1;
+}
+
+/* ============================================================================
+   CELDAS BASE
+   ============================================================================ */
+
+.grid-cell {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    overflow: visible;
+}
+
+/* ============================================================================
+   SECCIONES: HOME Y DESTINOS (SIN BORDES NI BACKGROUNDS)
+   ============================================================================ */
+
+/* home - completamente transparente */
+.grid-cell.home {
+    background-color: transparent;
+    border: none;
+    z-index: 100;
+}
+
+.grid-cell.home .section-label {
+    color: #ffffff;
+    font-size: clamp(0.7rem, 1.5vw, 1.1rem);
+    font-weight: 700;
+    text-transform: lowercase;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+    z-index: 101;
+}
+
+/* destinos - completamente transparentes */
+.grid-cell.destination {
+    background-color: transparent;
+    border: none;
+    z-index: 100;
+}
+
+.grid-cell.destination a {
+    display: block;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: #ffffff;
+    font-size: clamp(0.7rem, 1.5vw, 1.1rem);
+    font-weight: 700;
+    text-transform: lowercase;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+    transition: all 0.3s ease;
+    z-index: 101;
+}
+
+.grid-cell.destination a:hover {
+    transform: scale(1.1);
+    text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.9);
+}
+
+/* ============================================================================
+   PIEZAS DE TUBERÍAS - LÍNEAS RECTAS (DASHED)
+   ============================================================================ */
+
+/* recta horizontal */
+.pipe-straight-h::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 0;
+    top: 50%;
+    left: 0;
+    border-top: 5px dashed rgba(255, 255, 255, 0.8);
+    z-index: 1;
+}
+
+/* recta vertical */
+.pipe-straight-v::before {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 100%;
+    left: 50%;
+    top: 0;
+    border-left: 5px dashed rgba(255, 255, 255, 0.8);
+    z-index: 1;
+}
+
+/* ============================================================================
+   PIEZAS DE TUBERÍAS - CURVAS (DASHED)
+   ============================================================================ */
+
+/* curva top-right (viene de arriba, va a la derecha) */
+.pipe-curve-tr::before {
+    content: '';
+    position: absolute;
+    width: 50%;
+    height: 50%;
+    bottom: 0;
+    left: 50%;
+    border-top: 5px dashed rgba(255, 255, 255, 0.8);
+    border-left: 5px dashed rgba(255, 255, 255, 0.8);
+    border-radius: 100% 0 0 0;
+    z-index: 1;
+}
+
+/* curva top-left (viene de arriba, va a la izquierda) */
+.pipe-curve-tl::before {
+    content: '';
+    position: absolute;
+    width: 50%;
+    height: 50%;
+    bottom: 0;
+    right: 50%;
+    border-top: 5px dashed rgba(255, 255, 255, 0.8);
+    border-right: 5px dashed rgba(255, 255, 255, 0.8);
+    border-radius: 0 100% 0 0;
+    z-index: 1;
+}
+
+/* curva bottom-right (viene de abajo, va a la derecha) */
+.pipe-curve-br::before {
+    content: '';
+    position: absolute;
+    width: 50%;
+    height: 50%;
+    top: 0;
+    left: 50%;
+    border-bottom: 5px dashed rgba(255, 255, 255, 0.8);
+    border-left: 5px dashed rgba(255, 255, 255, 0.8);
+    border-radius: 0 0 0 100%;
+    z-index: 1;
+}
+
+/* curva bottom-left (viene de abajo, va a la izquierda) */
+.pipe-curve-bl::before {
+    content: '';
+    position: absolute;
+    width: 50%;
+    height: 50%;
+    top: 0;
+    right: 50%;
+    border-bottom: 5px dashed rgba(255, 255, 255, 0.8);
+    border-right: 5px dashed rgba(255, 255, 255, 0.8);
+    border-radius: 0 0 100% 0;
+    z-index: 1;
+}
+
+/* ============================================================================
+   PIEZAS DE TUBERÍAS - FORMA T (DASHED)
+   ============================================================================ */
+
+/* T hacia arriba (sin conexión abajo) */
+.pipe-t-up::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 0;
+    top: 50%;
+    left: 0;
+    border-top: 5px dashed rgba(255, 255, 255, 0.8);
+    z-index: 1;
+}
+
+.pipe-t-up::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 50%;
+    left: 50%;
+    top: 0;
+    border-left: 5px dashed rgba(255, 255, 255, 0.8);
+    z-index: 1;
+}
+
+/* T hacia abajo (sin conexión arriba) */
+.pipe-t-down::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 0;
+    top: 50%;
+    left: 0;
+    border-top: 5px dashed rgba(255, 255, 255, 0.8);
+    z-index: 1;
+}
+
+.pipe-t-down::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 50%;
+    left: 50%;
+    bottom: 0;
+    border-left: 5px dashed rgba(255, 255, 255, 0.8);
+    z-index: 1;
+}
+
+/* T hacia izquierda (sin conexión derecha) */
+.pipe-t-left::before {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 100%;
+    left: 50%;
+    top: 0;
+    border-left: 5px dashed rgba(255, 255, 255, 0.8);
+    z-index: 1;
+}
+
+.pipe-t-left::after {
+    content: '';
+    position: absolute;
+    width: 50%;
+    height: 0;
+    top: 50%;
+    left: 0;
+    border-top: 5px dashed rgba(255, 255, 255, 0.8);
+    z-index: 1;
+}
+
+/* T hacia derecha (sin conexión izquierda) */
+.pipe-t-right::before {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 100%;
+    left: 50%;
+    top: 0;
+    border-left: 5px dashed rgba(255, 255, 255, 0.8);
+    z-index: 1;
+}
+
+.pipe-t-right::after {
+    content: '';
+    position: absolute;
+    width: 50%;
+    height: 0;
+    top: 50%;
+    right: 0;
+    border-top: 5px dashed rgba(255, 255, 255, 0.8);
+    z-index: 1;
+}
+
+/* ============================================================================
+   PIEZAS DE TUBERÍAS - CRUZ (+) (DASHED)
+   ============================================================================ */
+
+.pipe-cross::before,
+.pipe-cross::after {
+    content: '';
+    position: absolute;
+    z-index: 1;
+}
+
+/* línea horizontal */
+.pipe-cross::before {
+    width: 100%;
+    height: 0;
+    top: 50%;
+    left: 0;
+    border-top: 5px dashed rgba(255, 255, 255, 0.8);
+}
+
+/* línea vertical */
+.pipe-cross::after {
+    width: 0;
+    height: 100%;
+    left: 50%;
+    top: 0;
+    border-left: 5px dashed rgba(255, 255, 255, 0.8);
+}
+
+/* ============================================================================
+   LOGO SECTION
+   ============================================================================ */
+
+.logo-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.logo {
+    max-width: 80%;
+    max-height: 80%;
+    object-fit: contain;
+    filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.3));
+}
+
+/* ============================================================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================================================ */
+
+@media (max-width: 768px) {
+    .grid-container {
+        max-width: 95vw;
+        max-height: 95vw;
+    }
+
+    .grid-cell.home .section-label,
+    .grid-cell.destination a {
+        font-size: clamp(0.5rem, 2vw, 0.9rem);
+    }
+    
+    /* líneas un poco más finas en mobile */
+    .pipe-straight-h::before,
+    .pipe-straight-v::before,
+    .pipe-curve-tr::before,
+    .pipe-curve-tl::before,
+    .pipe-curve-br::before,
+    .pipe-curve-bl::before,
+    .pipe-t-up::before,
+    .pipe-t-up::after,
+    .pipe-t-down::before,
+    .pipe-t-down::after,
+    .pipe-t-left::before,
+    .pipe-t-left::after,
+    .pipe-t-right::before,
+    .pipe-t-right::after,
+    .pipe-cross::before,
+    .pipe-cross::after {
+        border-width: 3px;
+    }
+}
+
+/* ============================================================================
+   OPTIMIZACIONES DE RENDIMIENTO
+   ============================================================================ */
+
+.grid-container {
+    contain: layout style paint;
+}
+
+.grid-cell {
+    contain: layout style;
+}
