@@ -11,13 +11,18 @@
 
 .page-content {
     text-align: center;
+    /* background-color: rgba(0, 0, 0, 0.5); */
     padding: 60px;
+    /* border-radius: 20px; */
+    /* backdrop-filter: blur(10px); */
+    /* box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); */
 }
 
 .page-content h1 {
     font-family: 'BBH Bogle', sans-serif;
     font-size: clamp(3rem, 8vw, 6rem);
     color: #ffffff;
+    /* text-transform: lowercase; */
     margin-bottom: 40px;
     text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
 }
@@ -28,15 +33,23 @@
     color: #ffffff;
     text-decoration: none;
     padding: 15px 30px;
+    /* background-color: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 10px; */
     display: inline-block;
     position: absolute;
     right: 20px;
     bottom: 20px;
     transition: all 0.3s ease;
+    /* text-transform: lowercase; */
+
 }
 
 .back-link:hover {
+    /* background-color: rgba(255, 255, 255, 0.2); */
+    /* border-color: rgba(255, 255, 255, 0.6); */
     transform: translateY(-2px);
+    /* box-shadow: 0 4px 16px rgba(255, 255, 255, 0.2); */
 }
 
 /* Responsive adjustments */

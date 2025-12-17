@@ -1,0 +1,75 @@
+/* ============================================================================
+   MARQUEE STYLES - Logo animado en páginas internas
+   ============================================================================ */
+
+/* Contenedores de marquee - altura controlada dinámicamente por JS */
+.marquee-top,
+.marquee-bottom {
+    position: fixed;
+    left: 0;
+    width: 100%;
+    overflow: hidden;
+    z-index: 1;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+}
+
+.marquee-top {
+    top: 0;
+}
+
+.marquee-bottom {
+    bottom: 0;
+}
+
+/* Contenedor interno que se anima */
+.marquee-content {
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    will-change: transform;
+}
+
+/* Animación de derecha a izquierda (marquee superior) */
+.marquee-top .marquee-content {
+    animation: marquee-rtl linear infinite;
+}
+
+/* Animación de izquierda a derecha (marquee inferior) */
+.marquee-bottom .marquee-content {
+    animation: marquee-ltr linear infinite;
+}
+
+/* Logo dentro del marquee - estilos controlados dinámicamente por JS */
+.marquee-logo {
+    width: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.2));
+}
+
+/* Keyframes para animación de derecha a izquierda */
+@keyframes marquee-rtl {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+/* Keyframes para animación de izquierda a derecha */
+@keyframes marquee-ltr {
+    0% {
+        transform: translateX(-50%);
+    }
+    100% {
+        transform: translateX(0);
+    }
+}
+
+/* Ajustar el contenedor de página - padding controlado dinámicamente por JS */
+.page-container {
+    min-height: 100vh;
+    height: auto;
+}
