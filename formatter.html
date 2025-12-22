@@ -307,7 +307,15 @@
           div.appendChild(h2);
         }
 
-        if (section.subtitulo) {
+        if (Array.isArray(section.subtitulo)) {
+          section.subtitulo
+            .filter(sub => typeof sub === 'string' && sub.trim())
+            .forEach(sub => {
+              const h3 = document.createElement('h3');
+              h3.textContent = sub;
+              div.appendChild(h3);
+            });
+        } else if (section.subtitulo) {
           const h3 = document.createElement('h3');
           h3.textContent = section.subtitulo;
           div.appendChild(h3);
@@ -393,7 +401,7 @@
         card.appendChild(header);
 
         card.appendChild(this.createFormGroup('Título (H2)', 'text', section.titulo || '', (value) => this.updateSection(index, 'titulo', value)));
-        card.appendChild(this.createFormGroup('Subtítulo (H3)', 'text', section.subtitulo || '', (value) => this.updateSection(index, 'subtitulo', value), true));
+        card.appendChild(this.createSubtitlesGroup(section, index));
         card.appendChild(this.createParagraphsGroup(section.texto || [], index));
         card.appendChild(this.createLogosGroup(section.logos || [], index));
         return card;
@@ -414,6 +422,51 @@
         input.addEventListener('input', (e) => onChange(e.target.value));
         group.appendChild(input);
         return group;
+      },
+
+      createSubtitlesGroup(section, sectionIndex) {
+        const subtitles = this.normalizeSubtitles(section);
+        const group = document.createElement('div');
+        group.className = 'form-group';
+        const label = document.createElement('label');
+        label.className = 'form-label optional';
+        label.textContent = 'Subtítulos (H3)';
+        group.appendChild(label);
+
+        const list = document.createElement('div');
+        list.className = 'paragraph-list';
+        subtitles.forEach((subtitle, sIndex) => {
+          const item = this.createSubtitleItem(subtitle, sectionIndex, sIndex);
+          list.appendChild(item);
+        });
+        group.appendChild(list);
+
+        const addBtn = document.createElement('button');
+        addBtn.className = 'btn btn-add';
+        addBtn.textContent = '+ Añadir subtítulo';
+        addBtn.onclick = () => this.addSubtitle(sectionIndex);
+        group.appendChild(addBtn);
+        return group;
+      },
+
+      createSubtitleItem(subtitle, sectionIndex, sIndex) {
+        const item = document.createElement('div');
+        item.className = 'paragraph-item';
+        const header = document.createElement('div');
+        header.className = 'paragraph-header';
+        header.innerHTML = `
+          <span class="paragraph-label">Subtítulo ${sIndex + 1}</span>
+          <button class="btn btn-icon btn-small" onclick="Editor.deleteSubtitle(${sectionIndex}, ${sIndex})" title="Eliminar subtítulo">🗑️</button>
+        `;
+        item.appendChild(header);
+
+        const input = document.createElement('input');
+        input.className = 'form-input';
+        input.type = 'text';
+        input.value = subtitle;
+        input.addEventListener('input', (e) => this.updateSubtitle(sectionIndex, sIndex, e.target.value));
+        item.appendChild(input);
+        return item;
       },
 
       createParagraphsGroup(paragraphs, sectionIndex) {
@@ -543,9 +596,34 @@
         this.triggerUpdate();
       },
 
+      normalizeSubtitles(section) {
+        if (Array.isArray(section.subtitulo)) return section.subtitulo;
+        if (typeof section.subtitulo === 'string' && section.subtitulo.trim()) {
+          section.subtitulo = [section.subtitulo];
+        } else {
+          section.subtitulo = [];
+        }
+        return section.subtitulo;
+      },
+
+      updateSubtitle(sectionIndex, subtitleIndex, value) {
+        const section = this.data[this.currentCategory][sectionIndex];
+        const subtitles = this.normalizeSubtitles(section);
+        subtitles[subtitleIndex] = value;
+        this.triggerUpdate();
+      },
+
       addSection() {
         const newSection = { titulo: '', texto: [] };
         this.data[this.currentCategory].push(newSection);
+        this.renderCategory(this.currentCategory);
+        this.triggerUpdate();
+      },
+
+      addSubtitle(sectionIndex) {
+        const section = this.data[this.currentCategory][sectionIndex];
+        const subtitles = this.normalizeSubtitles(section);
+        subtitles.push('');
         this.renderCategory(this.currentCategory);
         this.triggerUpdate();
       },
@@ -572,6 +650,14 @@
           this.data[this.currentCategory][sectionIndex].texto = [];
         }
         this.data[this.currentCategory][sectionIndex].texto.push('');
+        this.renderCategory(this.currentCategory);
+        this.triggerUpdate();
+      },
+
+      deleteSubtitle(sectionIndex, subtitleIndex) {
+        const section = this.data[this.currentCategory][sectionIndex];
+        const subtitles = this.normalizeSubtitles(section);
+        subtitles.splice(subtitleIndex, 1);
         this.renderCategory(this.currentCategory);
         this.triggerUpdate();
       },
