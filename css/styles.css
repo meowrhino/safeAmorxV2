@@ -362,7 +362,7 @@ body.home-page {
 
 :root {
     /* Fuente para encabezados (h1, h2, h3) */
-    --font-headings: 'BBH Bogle', sans-serif;
+    --font-headings: 'Archivo', sans-serif;
     /* Fuente para párrafos y texto general */
     --font-paragraphs: 'Archivo', sans-serif;
     /* Colores del texto */
