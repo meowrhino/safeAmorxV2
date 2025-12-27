@@ -269,6 +269,18 @@
             "INSERTAR LOGOS; CARTELES; FLYERS, FOTOS DEL EQUIPO"
           ]
         }
+      ],
+      "logos": [
+        {
+          "src": "assets/logos/cccb_logo.webp",
+          "link": "",
+          "alt": ""
+        },
+        {
+          "src": "assets/logos/mse_logo_2_blanco.webp",
+          "link": "",
+          "alt": ""
+        }
       ]
     },
     {

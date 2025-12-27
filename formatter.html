@@ -145,6 +145,7 @@
   <footer class="formatter-footer">
     <div class="footer-actions footer-left">
       <button id="saveBtn" class="btn ghost">Guardar local</button>
+      <button id="resetLocalBtn" class="btn btn-danger">Limpiar local</button>
     </div>
     <div class="footer-actions footer-center">
       <button id="copyJsonBtn" class="btn ghost">Copiar JSON</button>
@@ -803,6 +804,8 @@
 
         document.getElementById('saveBtn').addEventListener('click', () => this.saveProgress());
         document.getElementById('downloadBtn').addEventListener('click', () => this.downloadData());
+        const resetLocalBtn = document.getElementById('resetLocalBtn');
+        if (resetLocalBtn) resetLocalBtn.addEventListener('click', () => this.clearLocalAndReload());
 
         const copyBtn = document.getElementById('copyJsonBtn');
         if (copyBtn) copyBtn.addEventListener('click', () => this.copyJson());
@@ -860,6 +863,12 @@
           this.updateCounts();
           this.showStatus('Contenido reseteado', 'success');
         }
+      },
+
+      clearLocalAndReload() {
+        if (!confirm('Se borrara el cache local y se recargara data.json. Continuar?')) return;
+        Storage.clear();
+        location.reload();
       },
 
       showStatus(message, type = '') {

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Work+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Work+Sans:wght@400;500;600;700&family=Roboto+Condensed:wght@400;700&display=swap');
 
 /* ============================================================================
    ESTILOS BASE
@@ -16,7 +16,7 @@ html {
 }
 
 body {
-    font-family: 'BBH Bogle', sans-serif;
+    font-family: Helvetica, Arial, sans-serif;
     width: 100%;
     min-height: 100vh;
     overflow-x: hidden;
@@ -133,11 +133,12 @@ body.home-page {
 }
 
 .grid-cell.home .section-label {
-    color: #ffffff;
+    color: #00ff88;
+    font-family: Helvetica, Arial, sans-serif;
     font-size: 1rem;
     font-weight: 700;
-    text-transform: lowercase;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+    text-transform: uppercase;
+    /* text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.0); */
     z-index: 101;
 }
 
@@ -156,18 +157,19 @@ body.home-page {
     align-items: center;
     justify-content: center;
     text-decoration: none;
-    color: #ffffff;
+    color: #00ff88;
+    font-family: Helvetica, Arial, sans-serif;
     font-size: clamp(0.7rem, 1.5vw, 1.1rem);
     font-weight: 700;
-    text-transform: lowercase;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+    text-transform: uppercase;
+    /* text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.0); */
     transition: all 0.3s ease;
     z-index: 101;
 }
 
 .grid-cell.destination a:hover {
     transform: scale(1.1);
-    text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.9);
+    /* text-shadow: 1px 1px 6px rgba(0, 0, 0, 0.3); */
 }
 
 /* ============================================================================
@@ -177,7 +179,7 @@ body.home-page {
 /* configuración general de tuberías */
 .grid-cell.pipe {
     --pipe-stroke: 5px;
-    --pipe-color: #ffffff;
+    --pipe-color: #444;
     --pipe-half: calc(var(--pipe-stroke) / 2);
     --pipe-fill: linear-gradient(var(--pipe-color), var(--pipe-color));
     /* Usar opacity en vez de rgba evita que en cruces/T/esquinas se "sume" alpha
@@ -358,15 +360,16 @@ body.home-page {
 
 :root {
     /* Fuente para encabezados (h1, h2, h3) */
-    --font-headings: 'Archivo', sans-serif;
+    --font-headings: 'Roboto Condensed', 'Roboto', Arial, sans-serif;
     /* Fuente para párrafos y texto general */
-    --font-paragraphs: 'Archivo', sans-serif;
+    --font-paragraphs: Helvetica, Arial, sans-serif;
     /* Colores del texto */
-    --color-text-primary: #ffffff;
-    --color-text-secondary: rgba(255, 255, 255, 0.85);
+    --color-text-primary: #fff;
+    --color-text-secondary: #ccc;
     /* Espaciado */
     --spacing-section: 3.5rem;
     --spacing-paragraph: 1.1rem;
+    --spacing-paragraph-break: 2rem;
     --spacing-title: 1.6rem;
 }
 
@@ -384,18 +387,18 @@ body.home-page {
     font-weight: 700;
     color: var(--color-text-primary);
     margin-bottom: 1.5rem;
-    text-align: right;
-    text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.7);
+    text-align: left;
+    /* text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.7); */
     line-height: 1.2;
 }
 
 .content-section h3 {
     font-family: var(--font-headings);
     font-size: clamp(1.3rem, 3vw, 1.8rem);
-    font-weight: 600;
+    font-weight: 700;
     color: var(--color-text-primary);
     margin-bottom: 1.2rem;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
+    /* text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6); */
     line-height: 1.3;
 }
 
@@ -406,11 +409,15 @@ body.home-page {
     color: var(--color-text-secondary);
     line-height: 1.7;
     margin-bottom: var(--spacing-paragraph);
-    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+    /* text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5); */
 }
 
 .content-section p:last-child {
     margin-bottom: 0;
+}
+
+.content-section p + :not(p) {
+    margin-top: var(--spacing-paragraph-break);
 }
 
 .logos-container {
@@ -433,8 +440,8 @@ body.home-page {
 }
 
 .logo-item {
-    max-width: 120px;
-    max-height: 80px;
+    max-width: 200px;
+    max-height: 100px;
     height: auto;
     object-fit: contain;
     filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
@@ -449,6 +456,7 @@ body.content-page {
     :root {
         --spacing-section: 2.1rem;
         --spacing-paragraph: 0.95rem;
+        --spacing-paragraph-break: 1.6rem;
         --spacing-title: 1.3rem;
     }
 
@@ -462,8 +470,8 @@ body.content-page {
     }
 
     .logo-item {
-        max-width: 100px;
-        max-height: 60px;
+        max-width: 120px;
+        max-height: 70px;
     }
 }
 
@@ -485,20 +493,23 @@ body.content-page {
 }
 
 .page-content h1 {
-    font-family: 'BBH Bogle', sans-serif;
+    font-family: var(--font-headings);
     font-size: clamp(2.4rem, 7vw, 4rem);
+    font-weight: 700;
     color: #ffffff;
     margin-bottom: 24px;
-    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+    /* text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7); */
 }
 
 .back-link {
-    font-family: 'BBH Bogle', sans-serif;
+    font-family: var(--font-paragraphs);
     font-size: clamp(1rem, 2vw, 1.2rem);
     color: #ffffff;
     text-decoration: none;
     padding: 0;
-    display: inline-block;
+    display: block;
+    width: 100%;
+    text-align: right;
     margin-top: 0;
     margin-bottom: 0;
     transition: all 0.3s ease;
