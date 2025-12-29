@@ -106,6 +106,7 @@ body.home-page {
     gap: 0;
     width: 100%;
     height: 100%;
+    contain: layout style paint;
 }
 
 /* ============================================================================
@@ -119,6 +120,7 @@ body.home-page {
     justify-content: center;
     transition: all 0.3s ease;
     overflow: visible;
+    contain: layout style;
 }
 
 /* ============================================================================
@@ -150,7 +152,6 @@ body.home-page {
 }
 
 .grid-cell.destination a {
-    display: block;
     width: 100%;
     height: 100%;
     display: flex;
@@ -180,7 +181,6 @@ body.home-page {
 .grid-cell.pipe {
     --pipe-stroke: var(--map-stroke);
     --pipe-color: var(--map-line-color);
-    --pipe-half: calc(var(--pipe-stroke) / 2);
     --pipe-fill: linear-gradient(var(--pipe-color), var(--pipe-color));
     /* Usar opacity en vez de rgba evita que en cruces/T/esquinas se "sume" alpha
        (y aparezca un nodo/dot más oscuro en el centro). */
@@ -336,22 +336,6 @@ body.home-page {
     .grid-cell.destination a {
         font-size: 1rem;
     }
-    
-    .grid-cell.pipe {
-        --map-stroke: 3px;
-    }
-}
-
-/* ============================================================================
-   OPTIMIZACIONES DE RENDIMIENTO
-   ============================================================================ */
-
-.grid-container {
-    contain: layout style paint;
-}
-
-.grid-cell {
-    contain: layout style;
 }
 
 /* ============================================================================
@@ -374,7 +358,6 @@ body.home-page {
     --spacing-section: 3.5rem;
     --spacing-paragraph: 1.1rem;
     --spacing-paragraph-break: 2rem;
-    --spacing-title: 1.6rem;
 }
 
 .content-section {
@@ -452,17 +435,11 @@ body.home-page {
     filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
 }
 
-body.content-page {
-    overflow-y: auto;
-    min-height: 100dvh;
-}
-
 @media (max-width: 768px) {
     :root {
         --spacing-section: 2.1rem;
         --spacing-paragraph: 0.95rem;
         --spacing-paragraph-break: 1.6rem;
-        --spacing-title: 1.3rem;
         --map-stroke: 3px;
     }
 
@@ -486,6 +463,8 @@ body.content-page {
    ============================================================================ */
 
 body.content-page {
+    overflow-y: auto;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
 }
@@ -554,78 +533,5 @@ body.content-page {
     .back-link {
         margin-top: 0;
         margin-bottom: 0;
-    }
-}
-
-/* ============================================================================
-   MARQUEE
-   ============================================================================ */
-
-:root {
-    --marquee-height: 22dvh;
-    --marquee-logo-height: 15dvh;
-    --marquee-gap: 1.4vw;
-    --marquee-speed: 120s;
-}
-
-@media (max-width: 768px) {
-    :root {
-        --marquee-height: 24dvh;
-        --marquee-logo-height: 17dvh;
-        --marquee-gap: 2.6vw;
-    }
-}
-
-.marquee-top,
-.marquee-bottom {
-    width: 100%;
-    height: var(--marquee-height);
-    flex: 0 0 var(--marquee-height);
-    overflow: hidden;
-    pointer-events: none;
-    display: flex;
-    align-items: center;
-}
-
-.marquee-content {
-    display: flex;
-    align-items: center;
-    white-space: nowrap;
-    will-change: transform;
-    gap: var(--marquee-gap);
-    padding-inline: var(--marquee-gap);
-}
-
-.marquee-top .marquee-content {
-    animation: marquee-rtl var(--marquee-speed) linear infinite;
-}
-
-.marquee-bottom .marquee-content {
-    animation: marquee-ltr var(--marquee-speed) linear infinite;
-}
-
-.marquee-logo {
-    height: var(--marquee-logo-height);
-    width: auto;
-    object-fit: contain;
-    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.2));
-    opacity: 0.9;
-}
-
-@keyframes marquee-rtl {
-    0% {
-        transform: translateX(0);
-    }
-    100% {
-        transform: translateX(-50%);
-    }
-}
-
-@keyframes marquee-ltr {
-    0% {
-        transform: translateX(-50%);
-    }
-    100% {
-        transform: translateX(0);
     }
 }

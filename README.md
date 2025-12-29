@@ -1,6 +1,6 @@
 # safe amorx
 
-Sitio web de Safe Amorx con navegación en grid, contenido dinámico desde `data.json`, marquees animados y un editor visual incluido.
+Sitio web de Safe Amorx con navegación en grid, contenido dinámico desde `data.json` y un editor visual incluido.
 
 ## Estructura
 - `index.html` (home con grid aleatoria)
@@ -8,7 +8,7 @@ Sitio web de Safe Amorx con navegación en grid, contenido dinámico desde `data
 - `data.json` (fuente única de contenido para about/booking/cv)
 - `formatter.html` (editor visual inline para `data.json`)
 - `css/styles.css` (estilos únicos de todo el sitio)
-- `js/main.js` (lógica única: grid + marquee + loader)
+- `js/main.js` (lógica única: grid + loader)
 - `assets/` (imágenes, fondos)
 
 ## Contenido dinámico (`data.json`)
@@ -32,10 +32,6 @@ Sitio web de Safe Amorx con navegación en grid, contenido dinámico desde `data
 - `js/main.js` genera una grid adaptable (10×10 desktop, compacta en móvil), coloca home + destinos aleatoriamente y conecta con caminos calculados.
 - Respeta espaciamiento entre secciones, evita solapes y reutiliza trayectos existentes para caminos más limpios.
 - Los estilos de tuberías están en `css/styles.css` (rectas, curvas, T, cruces, extremos).
-
-## Marquees y layout de páginas internas
-- `js/main.js` crea marquees superior/inferior con logos.
-- `css/styles.css` define el layout en flujo: marquee top → contenido → home → marquee bottom.
 
 ## Uso rápido
 - Abrir el sitio: abre `index.html` en el navegador (las rutas internas son relativas).

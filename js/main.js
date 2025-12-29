@@ -81,7 +81,7 @@
                 y = Math.floor(Math.random() * rows);
                 key = toKey(x, y);
                 attempts++;
-                if (attempts > 1000) return null;
+                if (attempts > 100) return null;
             } while (used.has(key));
 
             markForbiddenAround(x, y);
@@ -397,49 +397,6 @@
         document.addEventListener('DOMContentLoaded', setupGrid);
     } else {
         setupGrid();
-    }
-})();
-
-// ============================================================================
-// MARQUEE (páginas internas)
-// ============================================================================
-(() => {
-    const MARQUEE_CONFIG = {
-        logoPath: 'assets/images/LOGO.webp',
-        logoCount: 24
-    };
-
-    function fillMarquee(marqueeContainer) {
-        marqueeContainer.innerHTML = '';
-        const marqueeContent = document.createElement('div');
-        marqueeContent.className = 'marquee-content';
-
-        for (let i = 0; i < MARQUEE_CONFIG.logoCount; i++) {
-            const logo = document.createElement('img');
-            logo.src = MARQUEE_CONFIG.logoPath;
-            logo.alt = 'safe amorx';
-            logo.className = 'marquee-logo';
-            marqueeContent.appendChild(logo);
-        }
-
-        marqueeContainer.appendChild(marqueeContent);
-    }
-
-    function setupMarquee() {
-        if (document.body.classList.contains('home-page')) return;
-
-        const marqueeTop = document.querySelector('.marquee-top');
-        const marqueeBottom = document.querySelector('.marquee-bottom');
-        if (!marqueeTop || !marqueeBottom) return;
-
-        fillMarquee(marqueeTop);
-        fillMarquee(marqueeBottom);
-    }
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', setupMarquee);
-    } else {
-        setupMarquee();
     }
 })();
 
