@@ -450,8 +450,19 @@ body.home-page {
     outline-offset: 2px;
 }
 
+.content-paragraphs {
+    max-height: var(--content-max-height, 9999px);
+    overflow: hidden;
+    opacity: 1;
+    transform: translateY(0);
+    transition: max-height 0.35s ease, opacity 0.25s ease, transform 0.35s ease;
+}
+
 .content-block.is-collapsed .content-paragraphs {
-    display: none;
+    max-height: 0;
+    opacity: 0;
+    transform: translateY(-6px);
+    pointer-events: none;
 }
 
 .content-block {
@@ -619,27 +630,62 @@ body.content-page {
     position: absolute;
     left: 50%;
     bottom: -50dvh;
-    transform: translate(-50%, 0);
+    --home-shift: 0px;
+    transform: translate(-50%, 0) translateX(var(--home-shift));
     display: inline-flex;
-    flex-direction: column;
     align-items: center;
-    text-align: center;
+    gap: 0.9rem;
     margin: 0;
-    transition: all 0.3s ease;
+    transition: transform 0.35s ease;
 }
 
 .back-link::after {
     content: '';
     display: block;
-    width: var(--map-stroke);
-    height: 15dvh;
-    margin: 0.8rem auto 0;
+    width: clamp(140px, 32vw, 320px);
+    height: var(--map-stroke);
     background: var(--map-line-color);
     border-radius: 999px;
+    transform-origin: right center;
+    transform: scaleX(0);
+    animation: home-line-draw 0.6s ease forwards;
 }
 
-.back-link:hover {
-    transform: translate(-50%, -6px);
+.back-link:hover,
+.back-link:focus-visible {
+    --home-shift: 8px;
+}
+
+.back-link:focus-visible {
+    outline: 2px solid var(--map-text-color);
+    outline-offset: 4px;
+}
+
+.about-web-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 2.6rem;
+    font-family: var(--font-paragraphs);
+    font-size: clamp(1.05rem, 2.4vw, 1.35rem);
+    color: var(--map-text-color);
+    text-decoration: none;
+    letter-spacing: 0.04em;
+}
+
+.about-web-link:hover {
+    opacity: 0.85;
+}
+
+.about-web-link:focus-visible {
+    outline: 2px solid var(--map-text-color);
+    outline-offset: 3px;
+}
+
+@keyframes home-line-draw {
+    to {
+        transform: scaleX(1);
+    }
 }
 
 @media (max-width: 768px) {
@@ -655,5 +701,19 @@ body.content-page {
     .back-link {
         margin-top: 0;
         margin-bottom: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .content-paragraphs,
+    .block-toggle,
+    .back-link,
+    .back-link::after {
+        transition: none;
+        animation: none;
+    }
+
+    .back-link::after {
+        transform: scaleX(1);
     }
 }

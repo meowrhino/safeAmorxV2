@@ -405,6 +405,24 @@
 // LOADER (contenido dinámico)
 // ============================================================================
 (() => {
+    const COLLAPSE_RESIZE_DEBOUNCE_MS = 150;
+    let collapseResizeTimeout;
+
+    function setParagraphsMaxHeight(wrapper) {
+        if (!wrapper) return;
+        wrapper.style.setProperty('--content-max-height', `${wrapper.scrollHeight}px`);
+    }
+
+    function updateCollapsibleHeights(root = document) {
+        const wrappers = root.querySelectorAll('.content-paragraphs');
+        wrappers.forEach(setParagraphsMaxHeight);
+    }
+
+    function scheduleCollapsibleHeightsRefresh() {
+        clearTimeout(collapseResizeTimeout);
+        collapseResizeTimeout = setTimeout(() => updateCollapsibleHeights(), COLLAPSE_RESIZE_DEBOUNCE_MS);
+    }
+
     async function initContentLoader() {
         const contentContainer = document.querySelector('.page-content');
         if (!contentContainer) return;
@@ -421,6 +439,8 @@
             const data = await response.json();
             if (data && data[pageType]) {
                 renderContent(data[pageType]);
+                requestAnimationFrame(() => updateCollapsibleHeights(contentContainer));
+                window.addEventListener('resize', scheduleCollapsibleHeightsRefresh);
             }
         } catch (error) {
             console.error('Error al inicializar el loader:', error);
@@ -451,8 +471,11 @@
 
         const h1 = contentContainer.querySelector('h1');
         const backLink = contentContainer.querySelector('.back-link');
+        const footerLink = contentContainer.querySelector('.about-web-link');
 
-        if (backLink) {
+        if (footerLink) {
+            contentContainer.insertBefore(fragment, footerLink);
+        } else if (backLink) {
             contentContainer.insertBefore(fragment, backLink);
         } else if (h1) {
             h1.after(fragment);
@@ -606,6 +629,7 @@
                     toggle.textContent = '>';
 
                     toggle.addEventListener('click', () => {
+                        setParagraphsMaxHeight(paragraphsWrapper);
                         const isCollapsed = blockWrapper.classList.toggle('is-collapsed');
                         toggle.setAttribute('aria-expanded', String(!isCollapsed));
                         toggle.setAttribute('aria-label', isCollapsed ? 'Expandir bloque' : 'Contraer bloque');

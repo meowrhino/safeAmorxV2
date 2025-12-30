@@ -100,7 +100,8 @@
     .preview-toggle { border: none; background: transparent; color: var(--color-muted); padding: 0; font-size: 0.9rem; line-height: 1; cursor: pointer; transition: transform 0.2s ease, opacity 0.2s ease; transform: rotate(-90deg); }
     .preview-block:not(.is-collapsed) .preview-toggle { transform: rotate(90deg); }
     .preview-toggle:hover { opacity: 0.8; }
-    .preview-block.is-collapsed .preview-paragraphs { display: none; }
+    .preview-paragraphs { max-height: var(--preview-max-height, 9999px); overflow: hidden; opacity: 1; transform: translateY(0); transition: max-height 0.25s ease, opacity 0.2s ease, transform 0.25s ease; }
+    .preview-block.is-collapsed .preview-paragraphs { max-height: 0; opacity: 0; transform: translateY(-4px); pointer-events: none; }
     .preview-block + .preview-block { margin-top: 12px; }
     .preview-block { --preview-paragraph-indent: 0; }
     .preview-paragraphs p { margin-left: var(--preview-paragraph-indent); }
@@ -396,6 +397,20 @@
           const sectionElement = this.createSectionPreview(section, index);
           this.container.appendChild(sectionElement);
         });
+
+        requestAnimationFrame(() => this.refreshExpandableHeights());
+      },
+
+      setExpandableHeight(wrapper) {
+        if (!wrapper) return;
+        wrapper.style.setProperty('--preview-max-height', `${wrapper.scrollHeight}px`);
+      },
+
+      refreshExpandableHeights() {
+        if (!this.container) return;
+        this.container.querySelectorAll('.preview-paragraphs').forEach((wrapper) => {
+          this.setExpandableHeight(wrapper);
+        });
       },
 
       normalizeIndent(value) {
@@ -515,6 +530,7 @@
               toggle.textContent = '>';
 
               toggle.addEventListener('click', () => {
+                this.setExpandableHeight(paragraphsWrapper);
                 const isCollapsed = blockWrapper.classList.toggle('is-collapsed');
                 toggle.setAttribute('aria-expanded', String(!isCollapsed));
                 toggle.setAttribute('aria-label', isCollapsed ? 'Expandir bloque' : 'Contraer bloque');
@@ -1229,6 +1245,9 @@
 
       async init() {
         const stored = Storage.load();
+        const storedRaw = localStorage.getItem(Storage.STORAGE_KEY);
+        const storedHasSangria = storedRaw ? storedRaw.includes('"sangria"') : false;
+        const storedHasDesplegable = storedRaw ? storedRaw.includes('"desplegable"') : false;
         let repoData = null;
         if (!stored) this.showStatus('Cargando data.json del repo...', '');
 
@@ -1239,7 +1258,17 @@
           this.showStatus('No se pudo leer data.json del repo', 'error');
         }
 
-        this.data = this.normalizeData(stored) || this.normalizeData(repoData) || Storage.getEmptyStructure();
+        const normalizedStored = this.normalizeData(stored);
+        const normalizedRepo = this.normalizeData(repoData);
+        if (normalizedStored && normalizedRepo) {
+          this.data = this.mergeMissingBlockFields(normalizedStored, normalizedRepo, {
+            preferRepoSangria: !storedHasSangria,
+            preferRepoDesplegable: !storedHasDesplegable
+          });
+          Storage.save(this.data);
+        } else {
+          this.data = normalizedStored || normalizedRepo || Storage.getEmptyStructure();
+        }
 
         Editor.init(this.data);
         Preview.init();
@@ -1259,6 +1288,53 @@
 
       normalizeData(raw) {
         return Storage.normalize(raw);
+      },
+
+      mergeMissingBlockFields(stored, repo, options = {}) {
+        if (!stored || !repo) return stored || repo;
+        const { preferRepoSangria = false, preferRepoDesplegable = false } = options;
+        const merged = JSON.parse(JSON.stringify(stored));
+        const categories = ['about', 'booking', 'collabs', 'training'];
+        categories.forEach((category) => {
+          const storedSections = Array.isArray(merged[category]) ? merged[category] : [];
+          const repoSections = Array.isArray(repo[category]) ? repo[category] : [];
+
+          repoSections.forEach((repoSection, sectionIndex) => {
+            if (!storedSections[sectionIndex]) {
+              storedSections[sectionIndex] = repoSection;
+              return;
+            }
+            const storedSection = storedSections[sectionIndex];
+            if (!Array.isArray(storedSection.bloques) && Array.isArray(repoSection.bloques)) {
+              storedSection.bloques = repoSection.bloques;
+              return;
+            }
+            if (!Array.isArray(storedSection.bloques) || !Array.isArray(repoSection.bloques)) return;
+
+            repoSection.bloques.forEach((repoBlock, blockIndex) => {
+              if (!storedSection.bloques[blockIndex]) {
+                storedSection.bloques[blockIndex] = repoBlock;
+                return;
+              }
+              const storedBlock = storedSection.bloques[blockIndex];
+              if (preferRepoDesplegable && repoBlock.desplegable !== undefined) {
+                storedBlock.desplegable = repoBlock.desplegable;
+              } else if (storedBlock.desplegable === undefined && repoBlock.desplegable !== undefined) {
+                storedBlock.desplegable = repoBlock.desplegable;
+              }
+
+              if (preferRepoSangria && repoBlock.sangria !== undefined) {
+                storedBlock.sangria = repoBlock.sangria;
+              } else if (storedBlock.sangria === undefined && repoBlock.sangria !== undefined) {
+                storedBlock.sangria = repoBlock.sangria;
+              }
+            });
+          });
+
+          merged[category] = storedSections;
+        });
+
+        return merged;
       },
 
       setupEventListeners() {
