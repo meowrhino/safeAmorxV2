@@ -194,10 +194,24 @@
     // ============================================================================
     const Storage = {
       STORAGE_KEY: 'safeamorx_content_data',
+      META_KEY: 'safeamorx_content_meta',
+      SCHEMA_VERSION: 2,
+
+      getVersion() {
+        try {
+          const raw = localStorage.getItem(this.META_KEY);
+          const parsed = raw ? Number.parseInt(raw, 10) : NaN;
+          return Number.isFinite(parsed) ? parsed : 0;
+        } catch (error) {
+          console.error('Error al leer la versión del almacenamiento:', error);
+          return 0;
+        }
+      },
 
       save(data) {
         try {
           localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data));
+          localStorage.setItem(this.META_KEY, String(this.SCHEMA_VERSION));
           return true;
         } catch (error) {
           console.error('Error al guardar en LocalStorage:', error);
@@ -219,6 +233,7 @@
       clear() {
         try {
           localStorage.removeItem(this.STORAGE_KEY);
+          localStorage.removeItem(this.META_KEY);
           return true;
         } catch (error) {
           console.error('Error al limpiar LocalStorage:', error);
@@ -287,6 +302,23 @@
         }
       },
 
+      normalizeIndentValue(value) {
+        if (typeof value === 'number' && Number.isFinite(value)) {
+          return Math.min(50, Math.max(0, value));
+        }
+        if (typeof value === 'string') {
+          const trimmed = value.trim();
+          if (!trimmed) return 0;
+          if (/^\d+(\.\d+)?%$/.test(trimmed) || /^\d+(\.\d+)?$/.test(trimmed)) {
+            const parsed = Number.parseFloat(trimmed);
+            if (Number.isFinite(parsed)) {
+              return Math.min(50, Math.max(0, parsed));
+            }
+          }
+        }
+        return 0;
+      },
+
       normalize(raw) {
         if (!raw || typeof raw !== 'object') return null;
         const data = JSON.parse(JSON.stringify(raw));
@@ -298,28 +330,12 @@
         }
         if (data.cv) delete data.cv;
         if (data.curriculum) delete data.curriculum;
-        const normalizeIndentValue = (value) => {
-          if (typeof value === 'number' && Number.isFinite(value)) {
-            return Math.min(50, Math.max(0, value));
-          }
-          if (typeof value === 'string') {
-            const trimmed = value.trim();
-            if (!trimmed) return 0;
-            if (/^\d+(\.\d+)?%$/.test(trimmed) || /^\d+(\.\d+)?$/.test(trimmed)) {
-              const parsed = Number.parseFloat(trimmed);
-              if (Number.isFinite(parsed)) {
-                return Math.min(50, Math.max(0, parsed));
-              }
-            }
-          }
-          return 0;
-        };
         const normalizeSection = (section) => {
           if (!section || typeof section !== 'object') {
             return { titulo: '', bloques: [{ subtitulo: '', texto: [], desplegable: false, sangria: 0 }], imagenes: [], logos: [] };
           }
           const normalized = { ...section };
-          const sectionIndent = normalizeIndentValue(normalized.sangria);
+          const sectionIndent = this.normalizeIndentValue(normalized.sangria);
           delete normalized.sangria;
           normalized.imagenes = Array.isArray(normalized.imagenes)
             ? normalized.imagenes.map(image => ({
@@ -345,7 +361,7 @@
               subtitulo: typeof block.subtitulo === 'string' ? block.subtitulo : '',
               texto: Array.isArray(block.texto) ? block.texto : [],
               desplegable: typeof block.desplegable === 'boolean' ? block.desplegable : false,
-              sangria: normalizeIndentValue(
+              sangria: this.normalizeIndentValue(
                 (typeof block.sangria === 'number' || typeof block.sangria === 'string') ? block.sangria : sectionIndent
               )
             }));
@@ -414,22 +430,8 @@
       },
 
       normalizeIndent(value) {
-        if (value === null || value === undefined) return '';
-        if (typeof value === 'number' && Number.isFinite(value)) {
-          const clamped = Math.min(50, Math.max(0, value));
-          return `${clamped}%`;
-        }
-        if (typeof value === 'string' && value.trim()) {
-          const trimmed = value.trim();
-          if (/^\d+(\.\d+)?%$/.test(trimmed) || /^\d+(\.\d+)?$/.test(trimmed)) {
-            const parsed = Number.parseFloat(trimmed);
-            if (Number.isFinite(parsed)) {
-              const clamped = Math.min(50, Math.max(0, parsed));
-              return `${clamped}%`;
-            }
-          }
-        }
-        return '';
+        const normalized = Storage.normalizeIndentValue(value);
+        return normalized ? `${normalized}%` : '';
       },
 
       ensureLightbox() {
@@ -604,7 +606,9 @@
               ? block.texto
               : (typeof block.texto === 'string' ? [block.texto] : []),
             desplegable: typeof block.desplegable === 'boolean' ? block.desplegable : false,
-            sangria: (typeof block.sangria === 'number' || typeof block.sangria === 'string') ? block.sangria : 0
+            sangria: Storage.normalizeIndentValue(
+              (typeof block.sangria === 'number' || typeof block.sangria === 'string') ? block.sangria : 0
+            )
           }));
         }
 
@@ -613,7 +617,7 @@
           ? section.texto
           : (typeof section.texto === 'string' ? [section.texto] : []);
 
-        return [{ subtitulo, texto, desplegable: false, sangria: 0 }];
+        return [{ subtitulo, texto, desplegable: false, sangria: Storage.normalizeIndentValue(section.sangria) }];
       },
 
       clear() {
@@ -726,20 +730,7 @@
       },
 
       normalizeIndentValue(value) {
-        if (typeof value === 'number' && Number.isFinite(value)) {
-          return Math.min(50, Math.max(0, value));
-        }
-        if (typeof value === 'string') {
-          const trimmed = value.trim();
-          if (!trimmed) return 0;
-          if (/^\d+(\.\d+)?%$/.test(trimmed) || /^\d+(\.\d+)?$/.test(trimmed)) {
-            const parsed = Number.parseFloat(trimmed);
-            if (Number.isFinite(parsed)) {
-              return Math.min(50, Math.max(0, parsed));
-            }
-          }
-        }
-        return 0;
+        return Storage.normalizeIndentValue(value);
       },
 
       createIndentControl(value, onChange) {
@@ -1248,6 +1239,8 @@
         const storedRaw = localStorage.getItem(Storage.STORAGE_KEY);
         const storedHasSangria = storedRaw ? storedRaw.includes('"sangria"') : false;
         const storedHasDesplegable = storedRaw ? storedRaw.includes('"desplegable"') : false;
+        const storedVersion = Storage.getVersion();
+        const isLegacyStorage = stored && storedVersion < Storage.SCHEMA_VERSION;
         let repoData = null;
         if (!stored) this.showStatus('Cargando data.json del repo...', '');
 
@@ -1262,8 +1255,8 @@
         const normalizedRepo = this.normalizeData(repoData);
         if (normalizedStored && normalizedRepo) {
           this.data = this.mergeMissingBlockFields(normalizedStored, normalizedRepo, {
-            preferRepoSangria: !storedHasSangria,
-            preferRepoDesplegable: !storedHasDesplegable
+            preferRepoSangria: isLegacyStorage || !storedHasSangria,
+            preferRepoDesplegable: isLegacyStorage || !storedHasDesplegable
           });
           Storage.save(this.data);
         } else {
