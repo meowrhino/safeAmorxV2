@@ -28,6 +28,7 @@
       --color-muted: #6f6259;
       --color-strong: #0f0c0a;
       --color-soft: #fcfaf7;
+      --color-link: #00ff88;
 
       /* Estilos visuales */
       --radius: 12px;
@@ -623,6 +624,15 @@
       margin-left: var(--preview-paragraph-indent);
     }
 
+    .preview-paragraphs a {
+      color: var(--color-link);
+      text-decoration: none;
+    }
+
+    .preview-paragraphs a:hover {
+      opacity: 0.85;
+    }
+
     .preview-block[style*="--preview-paragraph-indent"] .preview-paragraphs {
       position: relative;
     }
@@ -829,21 +839,19 @@
     </div>
   </header>
 
-  <nav class="tabs">
-    <button class="tab active" data-category="about">about <span class="tab-count" id="count-about">0</span></button>
-    <button class="tab" data-category="booking">booking <span class="tab-count" id="count-booking">0</span></button>
-    <button class="tab" data-category="collabs">collabs <span class="tab-count" id="count-collabs">0</span></button>
-    <button class="tab" data-category="training">training <span class="tab-count" id="count-training">0</span></button>
-  </nav>
+  <nav class="tabs" id="categoryTabs"></nav>
 
   <main class="formatter-main">
     <section class="editor-panel">
       <div class="panel-header">
         <div>
           <p class="eyebrow">categoría</p>
-          <h2 id="categoryTitle">About</h2>
+          <h2 id="categoryTitle">Categoría</h2>
         </div>
-        <button id="addSectionBtn" class="btn solid">+ añadir sección</button>
+        <div class="panel-actions">
+          <button id="renameCategoryBtn" class="btn ghost">Renombrar</button>
+          <button id="addSectionBtn" class="btn solid">+ añadir sección</button>
+        </div>
       </div>
       <div id="sectionsContainer" class="sections-container"></div>
     </section>
@@ -875,6 +883,15 @@
     // ============================================================================
     // STORAGE - Gestión de datos y localStorage
     // ============================================================================
+    const DEFAULT_HOME_LABEL = 'home';
+    const DEFAULT_CATEGORIES = [
+      { key: 'about', label: 'about' },
+      { key: 'booking', label: 'booking' },
+      { key: 'collabs', label: 'collabs' },
+      { key: 'training', label: 'training' },
+      { key: 'blog', label: 'blog' }
+    ];
+
     const Storage = {
       STORAGE_KEY: 'safeamorx_content_data',
       META_KEY: 'safeamorx_content_meta',
@@ -988,14 +1005,25 @@
       validate(data) {
         const normalized = this.normalize(data);
         if (!normalized) return false;
-        return ['about', 'booking', 'collabs', 'training'].every((category) => Array.isArray(normalized[category]));
+        return this.getCategoryKeys(normalized).every((category) => Array.isArray(normalized[category]));
       },
 
       /**
        * Retorna estructura vacía
        */
       getEmptyStructure() {
-        return { about: [], booking: [], collabs: [], training: [] };
+        const empty = {
+          meta: {
+            homeLabel: DEFAULT_HOME_LABEL,
+            categories: DEFAULT_CATEGORIES.map((category) => ({ ...category }))
+          }
+        };
+
+        DEFAULT_CATEGORIES.forEach((category) => {
+          empty[category.key] = [];
+        });
+
+        return empty;
       },
 
       /**
@@ -1033,6 +1061,65 @@
       },
 
       /**
+       * Normaliza categorías (clave + etiqueta)
+       */
+      normalizeCategories(rawCategories, dataKeys = []) {
+        const normalized = Array.isArray(rawCategories)
+          ? rawCategories.map((category) => {
+            const key = typeof category?.key === 'string' ? category.key.trim() : '';
+            if (!key) return null;
+            const label = typeof category?.label === 'string' && category.label.trim()
+              ? category.label.trim()
+              : key;
+            return { key, label };
+          }).filter(Boolean)
+          : [];
+
+        const keys = new Set(normalized.map((category) => category.key));
+
+        DEFAULT_CATEGORIES.forEach((category) => {
+          if (keys.has(category.key)) return;
+          keys.add(category.key);
+          normalized.push({ ...category });
+        });
+
+        dataKeys.forEach((key) => {
+          if (!key || keys.has(key)) return;
+          keys.add(key);
+          normalized.push({ key, label: key });
+        });
+
+        return normalized;
+      },
+
+      /**
+       * Asegura meta y categorías en el dataset
+       */
+      ensureMeta(data) {
+        const dataKeys = Object.keys(data).filter((key) => key !== 'meta' && Array.isArray(data[key]));
+        const categories = this.normalizeCategories(data?.meta?.categories, dataKeys);
+        const homeLabel = typeof data?.meta?.homeLabel === 'string' && data.meta.homeLabel.trim()
+          ? data.meta.homeLabel.trim()
+          : DEFAULT_HOME_LABEL;
+
+        data.meta = {
+          ...data.meta,
+          homeLabel,
+          categories
+        };
+
+        return data.meta;
+      },
+
+      /**
+       * Devuelve las claves de categoría activas
+       */
+      getCategoryKeys(data) {
+        const categories = Array.isArray(data?.meta?.categories) ? data.meta.categories : DEFAULT_CATEGORIES;
+        return categories.map((category) => category.key);
+      },
+
+      /**
        * Normaliza la estructura completa de datos
        * SIMPLIFICADO: Ahora siempre respeta los valores del JSON sin merge complejo
        */
@@ -1050,6 +1137,8 @@
         }
         if (data.cv) delete data.cv;
         if (data.curriculum) delete data.curriculum;
+
+        this.ensureMeta(data);
 
         /**
          * Normaliza una sección individual
@@ -1113,8 +1202,8 @@
           return normalized;
         };
 
-        // Normalizar todas las categorías
-        ['about', 'booking', 'collabs', 'training'].forEach((category) => {
+        // Normalizar todas las categorías activas
+        this.getCategoryKeys(data).forEach((category) => {
           if (!Array.isArray(data[category])) data[category] = [];
           data[category] = data[category].map(normalizeSection);
         });
@@ -1197,6 +1286,59 @@
       normalizeIndent(value) {
         const normalized = Storage.normalizeIndentValue(value);
         return normalized ? `${normalized}%` : '';
+      },
+
+      /**
+       * Extrae un <a> del HTML sin permitir nodos adicionales.
+       */
+      buildAnchorFromHtml(html) {
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = html;
+        const anchor = wrapper.querySelector('a');
+        if (!anchor) return null;
+
+        const safeAnchor = document.createElement('a');
+        safeAnchor.textContent = anchor.textContent || '';
+        const href = anchor.getAttribute('href');
+        const target = anchor.getAttribute('target');
+        const rel = anchor.getAttribute('rel');
+        if (href) safeAnchor.setAttribute('href', href);
+        if (target) safeAnchor.setAttribute('target', target);
+        if (rel) {
+          safeAnchor.setAttribute('rel', rel);
+        } else if (target === '_blank') {
+          safeAnchor.setAttribute('rel', 'noopener noreferrer');
+        }
+        return safeAnchor;
+      },
+
+      /**
+       * Inserta texto y anchors preservando el contenido no link.
+       */
+      appendParagraphContent(container, raw) {
+        if (typeof raw !== 'string') return;
+        const regex = /<a\b[^>]*>[\s\S]*?<\/a>/gi;
+        let lastIndex = 0;
+        let match;
+
+        while ((match = regex.exec(raw)) !== null) {
+          const before = raw.slice(lastIndex, match.index);
+          if (before) {
+            container.appendChild(document.createTextNode(before));
+          }
+          const anchor = this.buildAnchorFromHtml(match[0]);
+          if (anchor) {
+            container.appendChild(anchor);
+          } else {
+            container.appendChild(document.createTextNode(match[0]));
+          }
+          lastIndex = regex.lastIndex;
+        }
+
+        const after = raw.slice(lastIndex);
+        if (after) {
+          container.appendChild(document.createTextNode(after));
+        }
       },
 
       /**
@@ -1291,7 +1433,7 @@
           block.texto.forEach(parrafo => {
             if (typeof parrafo === 'string' && parrafo.trim()) {
               const p = document.createElement('p');
-              p.textContent = parrafo;
+              this.appendParagraphContent(p, parrafo);
               paragraphsWrapper.appendChild(p);
               hasParagraphs = true;
             }
@@ -2225,6 +2367,103 @@
       statusTimer: null,
 
       /**
+       * Devuelve las categorías configuradas
+       */
+      getCategories() {
+        const categories = this.data?.meta?.categories;
+        return Array.isArray(categories) && categories.length > 0 ? categories : DEFAULT_CATEGORIES;
+      },
+
+      /**
+       * Obtiene la etiqueta de una categoría
+       */
+      getCategoryLabel(key) {
+        const category = this.getCategories().find((item) => item.key === key);
+        return category ? category.label : key;
+      },
+
+      /**
+       * Actualiza la etiqueta de una categoría
+       */
+      setCategoryLabel(key, label) {
+        if (!this.data?.meta) return;
+        const categories = this.getCategories();
+        const category = categories.find((item) => item.key === key);
+        if (category) {
+          category.label = label;
+        } else {
+          categories.push({ key, label });
+        }
+        this.data.meta.categories = categories;
+      },
+
+      /**
+       * Asegura que exista el array de una categoría
+       */
+      ensureCategoryArray(key) {
+        if (!this.data) return;
+        if (!Array.isArray(this.data[key])) this.data[key] = [];
+      },
+
+      /**
+       * Renderiza tabs de categorías
+       */
+      renderTabs() {
+        const tabsContainer = document.getElementById('categoryTabs');
+        if (!tabsContainer) return;
+        tabsContainer.innerHTML = '';
+
+        this.getCategories().forEach((category) => {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'tab';
+          if (category.key === this.currentCategory) {
+            button.classList.add('active');
+          }
+          button.dataset.category = category.key;
+
+          const label = document.createElement('span');
+          label.textContent = category.label || category.key;
+
+          const count = document.createElement('span');
+          count.className = 'tab-count';
+          count.dataset.countFor = category.key;
+          count.textContent = String((this.data[category.key] || []).length);
+
+          button.appendChild(label);
+          button.appendChild(count);
+          tabsContainer.appendChild(button);
+        });
+      },
+
+      /**
+       * Actualiza título visible de categoría
+       */
+      updateCategoryTitle() {
+        const titleEl = document.getElementById('categoryTitle');
+        if (!titleEl) return;
+        titleEl.textContent = this.getCategoryLabel(this.currentCategory);
+      },
+
+      /**
+       * Renombra la categoría actual
+       */
+      renameCurrentCategory() {
+        const key = this.currentCategory;
+        const currentLabel = this.getCategoryLabel(key);
+        const next = prompt('Nuevo nombre para la categoría', currentLabel);
+        if (!next) return;
+        const trimmed = next.trim();
+        if (!trimmed) return;
+        this.setCategoryLabel(key, trimmed);
+        this.renderTabs();
+        this.updateCategoryTitle();
+        this.updateCounts();
+        Storage.save(this.data);
+        this.showStatus('Nombre de categoría actualizado', 'success');
+      },
+
+      /**
        * Inicializa la aplicación
        * SIMPLIFICADO: Ya no hace merge complejo, simplemente carga desde repo o localStorage
        */
@@ -2261,6 +2500,13 @@
         Editor.init(this.data);
         Preview.init();
         this.setupEventListeners();
+
+        const categories = this.getCategories();
+        if (!categories.find((category) => category.key === this.currentCategory)) {
+          this.currentCategory = categories[0]?.key || this.currentCategory;
+        }
+
+        this.getCategories().forEach((category) => this.ensureCategoryArray(category.key));
         this.switchCategory(this.currentCategory);
         this.updateCounts();
       },
@@ -2270,18 +2516,27 @@
        */
       setupEventListeners() {
         // Tabs de categorías
-        document.querySelectorAll('.tab').forEach(tab => {
-          tab.addEventListener('click', (e) => {
-            const category = e.currentTarget.dataset.category;
+        const tabsContainer = document.getElementById('categoryTabs');
+        if (tabsContainer) {
+          tabsContainer.addEventListener('click', (event) => {
+            const tab = event.target.closest('.tab');
+            if (!tab) return;
+            const category = tab.dataset.category;
             this.switchCategory(category);
           });
-        });
+        }
 
         // Botón añadir sección
         document.getElementById('addSectionBtn').addEventListener('click', () => {
           Editor.addSection();
           this.updateCounts();
         });
+
+        // Botón renombrar categoría
+        const renameBtn = document.getElementById('renameCategoryBtn');
+        if (renameBtn) {
+          renameBtn.addEventListener('click', () => this.renameCurrentCategory());
+        }
 
         // Botones del footer
         document.getElementById('saveBtn').addEventListener('click', () => this.saveProgress());
@@ -2303,23 +2558,11 @@
        */
       switchCategory(category) {
         this.currentCategory = category;
-
-        // Actualizar tabs activos
-        document.querySelectorAll('.tab').forEach(tab => {
-          tab.classList.toggle('active', tab.dataset.category === category);
-        });
-
-        // Actualizar título
-        const categoryTitles = {
-          about: 'About',
-          booking: 'Booking',
-          collabs: 'Collabs',
-          training: 'Training'
-        };
-        document.getElementById('categoryTitle').textContent = categoryTitles[category] || category;
+        this.ensureCategoryArray(category);
+        this.renderTabs();
+        this.updateCategoryTitle();
 
         // Renderizar contenido
-        if (!this.data[category]) this.data[category] = [];
         Editor.renderCategory(category);
         Preview.render(this.data[category]);
       },
@@ -2328,9 +2571,9 @@
        * Actualiza contadores de secciones
        */
       updateCounts() {
-        ['about', 'booking', 'collabs', 'training'].forEach(category => {
-          const count = this.data[category] ? this.data[category].length : 0;
-          const countEl = document.getElementById(`count-${category}`);
+        this.getCategories().forEach((category) => {
+          const count = this.data[category.key] ? this.data[category.key].length : 0;
+          const countEl = document.querySelector(`[data-count-for="${category.key}"]`);
           if (countEl) countEl.textContent = count;
         });
       },

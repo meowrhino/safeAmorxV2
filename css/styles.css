@@ -325,8 +325,8 @@ body.home-page {
 .logo {
   width: 100%;
   height: 100%;
-  max-width: none;
-  max-height: none;
+  max-width: 80%;
+  max-height: 80%;
   object-fit: contain;
   filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.3));
 }
@@ -369,8 +369,7 @@ body.content-page {
 .page-content {
   width: 100%;
   max-width: 980px;
-  margin: 0 auto;
-  margin-block: 50dvh;
+  margin: 50dvh auto 70dvh;
   padding: clamp(2rem, 4vw, 3.2rem) clamp(1rem, 3vw, 2.2rem) 1.6rem;
   text-align: left;
   position: relative;
@@ -393,6 +392,18 @@ body.content-page {
 }
 
 .content-section:last-child {
+  margin-bottom: 0;
+}
+
+.content-section.is-empty {
+  text-align: center;
+}
+
+body.content-page[data-category="blog"] .content-section {
+  margin-bottom: calc(var(--spacing-section) * 1.9);
+}
+
+body.content-page[data-category="blog"] .content-section:last-child {
   margin-bottom: 0;
 }
 
@@ -510,6 +521,15 @@ body.content-page {
   margin-left: var(--block-paragraph-indent);
 }
 
+.content-paragraphs a {
+  color: var(--map-text-color);
+  text-decoration: none;
+}
+
+.content-paragraphs a:hover {
+  opacity: 0.85;
+}
+
 /* ============================================================================
    19. IMÁGENES
    ============================================================================ */
@@ -615,7 +635,7 @@ body.content-page {
   padding: 0 0 5rem;
   position: absolute;
   left: 50%;
-  bottom: -50dvh;
+  bottom: -70dvh;
   --home-shift: 0px;
   transform: translate(-50%, 0) translateX(var(--home-shift));
   display: inline-flex;
@@ -626,8 +646,8 @@ body.content-page {
 }
 
 .back-link-logo {
-  max-width: 360px;
-  max-height: 170px;
+  max-width: 420px;
+  max-height: 200px;
   width: auto;
   height: auto;
   object-fit: contain;
@@ -646,7 +666,7 @@ body.content-page {
 .about-web-link {
   position: absolute;
   right: 50%;
-  bottom: -50dvh;
+  bottom: -70dvh;
   transform: translate(50%, 0);
   padding: 0 0 3rem;
   font-family: var(--font-paragraphs);
@@ -664,6 +684,34 @@ body.content-page {
 
 .about-web-link:focus-visible {
   outline: 2px solid var(--map-line-color);
+  outline-offset: 3px;
+}
+
+.load-more-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 2.5rem auto 0;
+  padding: 0.7rem 1.6rem;
+  border: 1px solid var(--map-text-color);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--map-text-color);
+  font-family: var(--font-paragraphs);
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.load-more-btn:hover {
+  transform: translateY(-2px);
+  opacity: 0.9;
+}
+
+.load-more-btn:focus-visible {
+  outline: 2px solid var(--map-text-color);
   outline-offset: 3px;
 }
 

@@ -314,3 +314,18 @@ addLinkToParagraph(sectionIndex, blockIndex, pIndex, textarea) {
 **Versión**: 2.1  
 **Fecha**: 31 de Diciembre de 2024  
 **Autor**: Manus AI
+
+---
+
+## Actualización - 4 de Enero de 2026
+
+### ✅ Cambios principales
+
+- **Layout**: `.page-content` ahora usa 50dvh arriba y 70dvh abajo; los enlaces inferiores se alinean con ese nuevo margen.
+- **Home link**: logo más grande y sin efecto hover (y logo principal de la home más pequeño).
+- **Blog**: sin texto fijo en HTML, con `data-category`, más espacio entre secciones y paginación tipo "cargar más" (lotes de 6).
+- **Contenido vacío**: si una sección o categoría está vacía, se muestra "proximamente".
+- **Placeholder**: "proximamente" centrado en secciones vacías.
+- **Formatter + data.json**: se añade `meta.categories`, tabs dinámicas, botón para renombrar categorías y soporte completo para `blog`.
+- **SEO básico**: títulos en mayúsculas por sección y favicon en todas las páginas.
+- **Links**: los links en párrafos se renderizan en preview y en web, en verde del mapa y sin subrayado.

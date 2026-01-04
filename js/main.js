@@ -13,14 +13,78 @@
         BLOCK_DIAGONAL_ADJACENCY: false
     };
 
-    const sections = [
-        { name: 'home', url: 'index.html', isHome: true },
-        { name: 'about', url: 'about.html', isHome: false },
-        { name: 'collabs', url: 'collabs.html', isHome: false },
-        { name: 'blog', url: 'blog.html', isHome: false },
-        { name: 'booking', url: 'booking.html', isHome: false },
-        { name: 'training', url: 'training.html', isHome: false }
+    const DEFAULT_HOME_LABEL = 'home';
+    const DEFAULT_CATEGORIES = [
+        { key: 'about', label: 'about' },
+        { key: 'booking', label: 'booking' },
+        { key: 'collabs', label: 'collabs' },
+        { key: 'training', label: 'training' },
+        { key: 'blog', label: 'blog' }
     ];
+
+    let sections = [];
+
+    function normalizeCategories(rawCategories, dataKeys = []) {
+        const normalized = Array.isArray(rawCategories)
+            ? rawCategories.map((category) => {
+                const key = typeof category?.key === 'string' ? category.key.trim() : '';
+                if (!key) return null;
+                const label = typeof category?.label === 'string' && category.label.trim()
+                    ? category.label.trim()
+                    : key;
+                return { key, label };
+            }).filter(Boolean)
+            : [];
+
+        const keys = new Set(normalized.map((category) => category.key));
+
+        DEFAULT_CATEGORIES.forEach((category) => {
+            if (keys.has(category.key)) return;
+            keys.add(category.key);
+            normalized.push({ ...category });
+        });
+
+        dataKeys.forEach((key) => {
+            if (!key || keys.has(key)) return;
+            keys.add(key);
+            normalized.push({ key, label: key });
+        });
+
+        return normalized;
+    }
+
+    function buildSectionsFromData(data) {
+        const dataKeys = data && typeof data === 'object'
+            ? Object.keys(data).filter((key) => key !== 'meta' && Array.isArray(data[key]))
+            : [];
+        const categories = normalizeCategories(data?.meta?.categories, dataKeys)
+            .filter((category) => category.key !== 'home');
+        const homeLabel = typeof data?.meta?.homeLabel === 'string' && data.meta.homeLabel.trim()
+            ? data.meta.homeLabel.trim()
+            : DEFAULT_HOME_LABEL;
+
+        return [
+            { key: 'home', label: homeLabel, url: 'index.html', isHome: true },
+            ...categories.map((category) => ({
+                key: category.key,
+                label: category.label || category.key,
+                url: `${category.key}.html`,
+                isHome: false
+            }))
+        ];
+    }
+
+    async function loadSections() {
+        try {
+            const response = await fetch('data.json', { cache: 'no-cache' });
+            if (!response.ok) throw new Error(`Respuesta ${response.status}`);
+            const data = await response.json();
+            return buildSectionsFromData(data);
+        } catch (error) {
+            console.warn('No se pudo cargar data.json para el grid:', error);
+            return buildSectionsFromData(null);
+        }
+    }
 
     function getCellsPerAxis() {
         return window.matchMedia('(max-width: 768px)').matches
@@ -233,7 +297,7 @@
             if (CONFIG.AVOID_OTHER_DESTINATIONS) {
                 blocked = new Set(
                     destinations
-                        .filter(d => d.section.name !== dest.section.name)
+                        .filter(d => d.section.key !== dest.section.key)
                         .map(d => toKey(d.x, d.y))
                 );
             }
@@ -243,7 +307,7 @@
                 : findSimplePath(start, end);
 
             if (!path) return null;
-            paths[dest.section.name] = path;
+            paths[dest.section.key] = path;
 
             if (CONFIG.PREFER_EXISTING_PATHS) {
                 for (const p of path) preferredCells.add(toKey(p.x, p.y));
@@ -312,13 +376,13 @@
                         cell.classList.add('home');
                         const label = document.createElement('span');
                         label.className = 'section-label';
-                        label.textContent = section.name;
+                        label.textContent = section.label;
                         cell.appendChild(label);
                     } else {
                         cell.classList.add('destination');
                         const link = document.createElement('a');
                         link.href = section.url;
-                        link.textContent = section.name;
+                        link.textContent = section.label;
                         cell.appendChild(link);
                     }
                 }
@@ -383,9 +447,10 @@
         createGrid(gridSize, config.positions, config.paths);
     }
 
-    function setupGrid() {
+    async function setupGrid() {
         if (!document.getElementById('gridContainer')) return;
 
+        sections = await loadSections();
         initGrid();
         let resizeTimeout;
         window.addEventListener('resize', () => {
@@ -406,6 +471,7 @@
 // ============================================================================
 (() => {
     const COLLAPSE_RESIZE_DEBOUNCE_MS = 150;
+    const BLOG_BATCH = 6;
     let collapseResizeTimeout;
 
     function setParagraphsMaxHeight(wrapper) {
@@ -437,37 +503,38 @@
             }
 
             const data = await response.json();
-            if (data && data[pageType]) {
-                renderContent(data[pageType]);
-                requestAnimationFrame(() => updateCollapsibleHeights(contentContainer));
-                window.addEventListener('resize', scheduleCollapsibleHeightsRefresh);
-            }
+            const contentArray = Array.isArray(data?.[pageType]) ? data[pageType] : [];
+            renderContent(contentArray, pageType);
+            requestAnimationFrame(() => updateCollapsibleHeights(contentContainer));
+            window.addEventListener('resize', scheduleCollapsibleHeightsRefresh);
         } catch (error) {
             console.error('Error al inicializar el loader:', error);
         }
     }
 
     function detectPageType() {
-        const title = document.title.toLowerCase();
-
-        if (title.includes('about')) return 'about';
-        if (title.includes('booking')) return 'booking';
-        if (title.includes('collabs') || title.includes('curriculum') || title.includes('cv')) return 'collabs';
-        if (title.includes('training')) return 'training';
-
-        return null;
+        const pageCategory = document.body?.dataset?.category
+            || document.querySelector('.page-content')?.dataset?.category;
+        if (!pageCategory) return null;
+        return pageCategory.trim().toLowerCase();
     }
 
-    function renderContent(contentArray) {
+    function renderContent(contentArray, pageType) {
         const contentContainer = document.querySelector('.page-content');
         if (!contentContainer) return;
 
         const fragment = document.createDocumentFragment();
 
-        contentArray.forEach((section, index) => {
-            const sectionElement = createSection(section, index);
-            fragment.appendChild(sectionElement);
-        });
+        const sections = Array.isArray(contentArray) ? contentArray : [];
+
+        if (sections.length === 0) {
+            fragment.appendChild(createPlaceholderSection());
+        } else {
+            sections.forEach((section, index) => {
+                const sectionElement = createSection(section, index);
+                fragment.appendChild(sectionElement);
+            });
+        }
 
         const h1 = contentContainer.querySelector('h1');
         const backLink = contentContainer.querySelector('.back-link');
@@ -482,6 +549,21 @@
         } else {
             contentContainer.appendChild(fragment);
         }
+
+        if (pageType === 'blog') {
+            setupBlogPagination(contentContainer);
+        }
+    }
+
+    // Crea sección vacía para mostrar "proximamente".
+    function createPlaceholderSection() {
+        const sectionDiv = document.createElement('div');
+        sectionDiv.className = 'content-section';
+        sectionDiv.classList.add('is-empty');
+        const p = document.createElement('p');
+        p.textContent = 'proximamente';
+        sectionDiv.appendChild(p);
+        return sectionDiv;
     }
 
     function normalizeBlocks(section) {
@@ -524,6 +606,55 @@
             }
         }
         return '';
+    }
+
+    // Extrae un <a> del HTML sin permitir nodos adicionales.
+    function buildAnchorFromHtml(html) {
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = html;
+        const anchor = wrapper.querySelector('a');
+        if (!anchor) return null;
+
+        const safeAnchor = document.createElement('a');
+        safeAnchor.textContent = anchor.textContent || '';
+        const href = anchor.getAttribute('href');
+        const target = anchor.getAttribute('target');
+        const rel = anchor.getAttribute('rel');
+        if (href) safeAnchor.setAttribute('href', href);
+        if (target) safeAnchor.setAttribute('target', target);
+        if (rel) {
+            safeAnchor.setAttribute('rel', rel);
+        } else if (target === '_blank') {
+            safeAnchor.setAttribute('rel', 'noopener noreferrer');
+        }
+        return safeAnchor;
+    }
+
+    // Inserta texto y anchors preservando el contenido no link.
+    function appendParagraphContent(container, raw) {
+        if (typeof raw !== 'string') return;
+        const regex = /<a\b[^>]*>[\s\S]*?<\/a>/gi;
+        let lastIndex = 0;
+        let match;
+
+        while ((match = regex.exec(raw)) !== null) {
+            const before = raw.slice(lastIndex, match.index);
+            if (before) {
+                container.appendChild(document.createTextNode(before));
+            }
+            const anchor = buildAnchorFromHtml(match[0]);
+            if (anchor) {
+                container.appendChild(anchor);
+            } else {
+                container.appendChild(document.createTextNode(match[0]));
+            }
+            lastIndex = regex.lastIndex;
+        }
+
+        const after = raw.slice(lastIndex);
+        if (after) {
+            container.appendChild(document.createTextNode(after));
+        }
     }
 
     let lightbox;
@@ -580,11 +711,13 @@
         const sectionDiv = document.createElement('div');
         sectionDiv.className = 'content-section';
         sectionDiv.setAttribute('data-section-index', index);
+        let hasContent = false;
 
         if (section.titulo) {
             const h2 = document.createElement('h2');
             h2.textContent = section.titulo;
             sectionDiv.appendChild(h2);
+            hasContent = true;
         }
 
         const blocks = normalizeBlocks(section);
@@ -606,7 +739,7 @@
                 const trimmed = typeof parrafo === 'string' ? parrafo.trim() : '';
                 if (!trimmed) return;
                 const p = document.createElement('p');
-                p.textContent = parrafo;
+                appendParagraphContent(p, parrafo);
                 paragraphsWrapper.appendChild(p);
                 hasParagraphs = true;
             });
@@ -647,6 +780,7 @@
                     blockWrapper.appendChild(paragraphsWrapper);
                 }
                 sectionDiv.appendChild(blockWrapper);
+                hasContent = true;
             }
         });
 
@@ -674,6 +808,7 @@
 
             if (imagesContainer.children.length > 0) {
                 sectionDiv.appendChild(imagesContainer);
+                hasContent = true;
             }
         }
 
@@ -697,9 +832,55 @@
             });
 
             sectionDiv.appendChild(logosContainer);
+            hasContent = true;
+        }
+
+        if (!hasContent) {
+            sectionDiv.classList.add('is-empty');
+            const p = document.createElement('p');
+            p.textContent = 'proximamente';
+            sectionDiv.appendChild(p);
         }
 
         return sectionDiv;
+    }
+
+    // Paginación tipo "load more" para blog.
+    function setupBlogPagination(container) {
+        const sections = Array.from(container.querySelectorAll('.content-section'));
+        if (sections.length <= BLOG_BATCH) return;
+
+        let visibleLimit = BLOG_BATCH;
+        const loadMoreBtn = document.createElement('button');
+        loadMoreBtn.type = 'button';
+        loadMoreBtn.className = 'load-more-btn';
+        loadMoreBtn.textContent = 'cargar más';
+
+        loadMoreBtn.addEventListener('click', () => {
+            visibleLimit += BLOG_BATCH;
+            applyPagination();
+        });
+
+        const backLink = container.querySelector('.back-link');
+        const footerLink = container.querySelector('.about-web-link');
+        if (footerLink) {
+            container.insertBefore(loadMoreBtn, footerLink);
+        } else if (backLink) {
+            container.insertBefore(loadMoreBtn, backLink);
+        } else {
+            container.appendChild(loadMoreBtn);
+        }
+
+        function applyPagination() {
+            let count = 0;
+            sections.forEach((section) => {
+                count += 1;
+                section.hidden = count > visibleLimit;
+            });
+            loadMoreBtn.style.display = count > visibleLimit ? 'inline-flex' : 'none';
+        }
+
+        applyPagination();
     }
 
     if (document.readyState === 'loading') {
