@@ -3,27 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HOME</title>
+    <title>SAFE AMORX - Espacios Seguros para la Comunidad</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="icon" href="assets/images/favicon.png" type="image/png">
-    <link href="https://fonts.googleapis.com/css2?family=BBH+Bogle:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body class="home-page">
-    <div class="container">
-        <!-- Grid 10x10 con mapa de navegación (70%) -->
-        <div class="grid-section">
-            <div class="grid-container" id="gridContainer">
-                <!-- Grid generada dinámicamente con JS -->
-            </div>
-        </div>
+    <!-- Header de navegación fijo -->
+    <header class="main-header">
+        <a href="index.html">
+            <img src="assets/images/LOGO.webp" alt="Safe Amorx" class="header-logo">
+        </a>
+        <nav class="main-nav">
+            <a href="collabs.html">Collabs</a>
+            <a href="blog.html">Blog</a>
+            <a href="about.html">About</a>
+            <a href="training.html">Training</a>
+            <a href="booking.html" class="cta-button">Booking</a>
+        </nav>
+    </header>
 
-        <!-- Logo section (30%) -->
-        <div class="logo-section">
-            <img src="assets/images/LOGO.webp" alt="safe amorx logo" class="logo">
+    <!-- Hero Section - 70dvh -->
+    <section class="hero-section">
+        <div class="hero-background"></div>
+        <div class="hero-content">
+            <img src="assets/images/LOGO.webp" alt="safe amorx logo" class="hero-logo">
         </div>
-    </div>
+    </section>
+
+    <!-- Transición con fotos - 30dvh -->
+    <section class="transition-section">
+        <div class="photo-gallery">
+            <img src="assets/images/party/party1.jpg" alt="Party atmosphere">
+            <img src="assets/images/party/party2.jpg" alt="Party atmosphere">
+            <img src="assets/images/party/party3.jpg" alt="Party atmosphere">
+            <img src="assets/images/party/party4.jpg" alt="Party atmosphere">
+            <img src="assets/images/party/party5.jpg" alt="Party atmosphere">
+            <img src="assets/images/party/party6.jpg" alt="Party atmosphere">
+            <img src="assets/images/party/party7.jpg" alt="Party atmosphere">
+            <img src="assets/images/party/party8.jpg" alt="Party atmosphere">
+            <img src="assets/images/party/party9.jpg" alt="Party atmosphere">
+            <img src="assets/images/party/party10.jpg" alt="Party atmosphere">
+            <!-- Duplicar para loop infinito -->
+            <img src="assets/images/party/party1.jpg" alt="Party atmosphere">
+            <img src="assets/images/party/party2.jpg" alt="Party atmosphere">
+            <img src="assets/images/party/party3.jpg" alt="Party atmosphere">
+            <img src="assets/images/party/party4.jpg" alt="Party atmosphere">
+            <img src="assets/images/party/party5.jpg" alt="Party atmosphere">
+            <img src="assets/images/party/party6.jpg" alt="Party atmosphere">
+            <img src="assets/images/party/party7.jpg" alt="Party atmosphere">
+            <img src="assets/images/party/party8.jpg" alt="Party atmosphere">
+            <img src="assets/images/party/party9.jpg" alt="Party atmosphere">
+            <img src="assets/images/party/party10.jpg" alt="Party atmosphere">
+        </div>
+    </section>
+
+    <!-- Mapa Section - 70dvh -->
+    <section class="map-section">
+        <div class="map-container" id="mapContainer">
+            <!-- Grid generada dinámicamente con JS -->
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <p>© 2026 Safe Amorx | Diseñado por <a href="https://meowrhino.studio" target="_blank">meowrhino.studio</a></p>
+    </footer>
 
     <script src="js/main.js"></script>
 </body>

@@ -364,7 +364,7 @@
     }
 
     function createGrid(gridSize, positions, paths) {
-        const container = document.getElementById('gridContainer');
+        const container = document.getElementById('mapContainer');
         if (!container) return;
 
         container.innerHTML = '';
@@ -425,7 +425,7 @@
     }
 
     function initGrid() {
-        const container = document.getElementById('gridContainer');
+        const container = document.getElementById('mapContainer');
         if (!container) return;
 
         container.style.width = '';
