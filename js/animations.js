@@ -78,4 +78,7 @@
     } else {
         initScrollAnimations();
     }
+    
+    // Re-inicializar cuando se carga contenido dinámico
+    document.addEventListener('content:loaded', initScrollAnimations);
 })();

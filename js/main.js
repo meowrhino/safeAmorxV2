@@ -572,6 +572,16 @@
             fragment.appendChild(createPlaceholderSection());
         } else {
             document.body.classList.remove('empty-page');
+            
+            // Añadir header con nombre de sección (30dvh aire)
+            const pageHeader = document.createElement('div');
+            pageHeader.className = 'page-section-header';
+            const pageTitle = document.createElement('h1');
+            pageTitle.className = 'page-section-title';
+            pageTitle.textContent = pageType ? pageType.toUpperCase() : '';
+            pageHeader.appendChild(pageTitle);
+            fragment.appendChild(pageHeader);
+            
             sections.forEach((section, index) => {
                 const sectionElement = createSection(section, index);
                 fragment.appendChild(sectionElement);
@@ -595,6 +605,12 @@
         if (pageType === 'blog') {
             setupBlogPagination(contentContainer);
         }
+        
+        // Disparar evento para iniciar animaciones de scroll
+        setTimeout(() => {
+            const event = new CustomEvent('content:loaded');
+            document.dispatchEvent(event);
+        }, 100);
     }
 
     // Crea sección vacía para mostrar "PRÓXIMAMENTE".
